@@ -1,0 +1,9 @@
+# docker-compose.yml
+version: '3.9' # Specify compose file version
+
+services:
+  vision_client:
+    build:
+      context: . # Use the current directory as the build context
+      dockerfile: Dockerfile # Specify the Dockerfile name
+    container_name: submerged-client
