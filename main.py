@@ -19,8 +19,8 @@ async def send_image(image_path):
     try:
         with open(image_path, "rb") as f:
             files = {"file": ("image.jpeg", f, "image/jpeg")}
-            # async with httpx.AsyncClient() as client:
-            #     response = await client.post(server_url, files=files)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(server_url, files=files)
         print("Sent to server. Status code:", response.status_code)
     except Exception as e:
         print("Error sending image:", e)
