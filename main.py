@@ -56,6 +56,7 @@ async def main_loop():
     try:
         while True:
             ret, frame = cap.read()
+
             if not ret:
                 print("Camera read failed")
                 break
@@ -65,6 +66,7 @@ async def main_loop():
             detection_occurred = len(indices) > 0
 
             if detection_occurred:
+                last_detection = time.time()
                 for i in indices:
                     i = i[0] if isinstance(i, (tuple, list, np.ndarray)) else i
                     x, y, w_box, h_box = boxes[i]
@@ -75,12 +77,11 @@ async def main_loop():
                 if now - last_send_time > cooldown_secs:
                     cv2.imwrite(output_path, frame)
                     asyncio.create_task(send_image(output_path))
-                    await asyncio.sleep(0.1)
                     last_send_time = now
-            else:
-                await asyncio.sleep(0.03)
-            # Show window regardless of detection
             cv2.imshow("Live Detection", frame)
+
+            await asyncio.sleep(0.03)
+            # Show window regardless of detection
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
     finally:
