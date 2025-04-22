@@ -15,6 +15,7 @@ cooldown_secs = 15
 output_path = "data/image.jpeg"
 server_url = "http://127.0.0.1:8123/analyze_image/"
 
+
 async def send_image(image_path):
     try:
         with open(image_path, "rb") as f:
@@ -24,6 +25,7 @@ async def send_image(image_path):
         print("Sent to server. Status code:", response.status_code)
     except Exception as e:
         print("Error sending image:", e)
+
 
 def detect_objects(frame):
     h, w = frame.shape[:2]
@@ -49,6 +51,7 @@ def detect_objects(frame):
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
     return indices, boxes, confidences, class_ids
 
+
 async def main_loop():
     cap = cv2.VideoCapture(1)
     last_send_time = 0
@@ -66,7 +69,6 @@ async def main_loop():
             detection_occurred = len(indices) > 0
 
             if detection_occurred:
-                last_detection = time.time()
                 for i in indices:
                     i = i[0] if isinstance(i, (tuple, list, np.ndarray)) else i
                     x, y, w_box, h_box = boxes[i]
@@ -76,7 +78,7 @@ async def main_loop():
 
                 if now - last_send_time > cooldown_secs:
                     cv2.imwrite(output_path, frame)
-                    asyncio.create_task(send_image(output_path))
+                    await send_image(output_path)
                     last_send_time = now
             cv2.imshow("Live Detection", frame)
 
@@ -87,6 +89,7 @@ async def main_loop():
     finally:
         cap.release()
         cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     asyncio.run(main_loop())
