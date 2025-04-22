@@ -13,7 +13,7 @@ conf_threshold = 0.5
 nms_threshold = 0.4
 cooldown_secs = 15
 output_path = "data/image.jpeg"
-server_url = "http://localhost:8123/analyze_image/"
+server_url = "http://127.0.0.1:8123/analyze_image/"
 
 async def send_image(image_path):
     try:
@@ -50,7 +50,7 @@ def detect_objects(frame):
     return indices, boxes, confidences, class_ids
 
 async def main_loop():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     last_send_time = 0
 
     try:
