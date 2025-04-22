@@ -50,7 +50,7 @@ def detect_objects(frame):
     return indices, boxes, confidences, class_ids
 
 async def main_loop():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(0)
     last_send_time = 0
 
     try:
