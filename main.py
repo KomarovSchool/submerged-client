@@ -75,9 +75,10 @@ async def main_loop():
                 if now - last_send_time > cooldown_secs:
                     cv2.imwrite(output_path, frame)
                     asyncio.create_task(send_image(output_path))
-                    await asyncio.sleep(0.01)
+                    await asyncio.sleep(0.1)
                     last_send_time = now
-
+            else:
+                await asyncio.sleep(0.03)
             # Show window regardless of detection
             cv2.imshow("Live Detection", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
