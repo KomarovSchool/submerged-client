@@ -59,7 +59,7 @@ def detect_objects(frame):
 
 
 async def main_loop():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(1)
     last_send_time = 0
 
     try:
