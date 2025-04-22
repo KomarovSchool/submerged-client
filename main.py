@@ -1,8 +1,14 @@
+from io import BytesIO
+
 import cv2
 import numpy as np
 import asyncio
 import httpx
 import time
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 # Load model
 net = cv2.dnn.readNetFromDarknet("model/merge.cfg", "model/merge_yolov4.weights")
@@ -16,15 +22,15 @@ output_path = "data/image.jpeg"
 server_url = "http://127.0.0.1:8123/analyze_image/"
 
 
-async def send_image(image_path):
+async def send_image(image_file):
     try:
-        with open(image_path, "rb") as f:
-            files = {"file": ("image.jpeg", f, "image/jpeg")}
-            async with httpx.AsyncClient() as client:
-                response = await client.post(server_url, files=files)
+        files = {"file": ("image.jpeg", image_file, "image/jpeg")}
+        timeout = httpx.Timeout(20.0, connect=20.0)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(server_url, files=files)
         print("Sent to server. Status code:", response.status_code)
     except Exception as e:
-        print("Error sending image:", e)
+        logger.exception("Error sending image:")
 
 
 def detect_objects(frame):
@@ -53,7 +59,7 @@ def detect_objects(frame):
 
 
 async def main_loop():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(2)
     last_send_time = 0
 
     try:
@@ -77,9 +83,10 @@ async def main_loop():
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
                 if now - last_send_time > cooldown_secs:
-                    cv2.imwrite(output_path, frame)
-                    await send_image(output_path)
-                    last_send_time = now
+                    is_success, buffer = cv2.imencode(".jpg", frame)
+                    if is_success:
+                        await send_image(BytesIO(buffer))
+                        last_send_time = now
             cv2.imshow("Live Detection", frame)
 
             await asyncio.sleep(0.03)
@@ -92,4 +99,5 @@ async def main_loop():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level='INFO')
     asyncio.run(main_loop())
